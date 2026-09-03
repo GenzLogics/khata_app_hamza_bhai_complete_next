@@ -6,6 +6,7 @@ export interface DashboardCountsResponse {
   total_purchase_invoices: number;
   purchase_balance_due_total: number;
   monthly_expenses_total: number;
+  monthly_cash_sales_total: number;
 }
 
 export type DashboardPeriod = "1d" | "7d" | "1m" | "3m" | "6m" | "1y";

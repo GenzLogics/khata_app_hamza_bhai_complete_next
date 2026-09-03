@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    clearAuthCookies();
+    await clearAuthCookies();
 
     return NextResponse.json({ message: "Signed out successfully" });
   } catch (error) {

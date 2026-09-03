@@ -11,6 +11,7 @@ import {
   Receipt,
   TrendingUp,
   Users,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
@@ -229,6 +230,7 @@ export default function DashboardPage() {
   const totalPurchaseInvoices = Number(data?.total_purchase_invoices ?? 0);
   const purchaseDebitTotal = Number(data?.purchase_balance_due_total ?? totalVendorDebit ?? 0);
   const monthlyExpensesTotal = Number(data?.monthly_expenses_total ?? 0);
+  const monthlyCashSalesTotal = Number(data?.monthly_cash_sales_total ?? 0);
   const periodStats: DashboardSummaryResponse | null = summaryData ?? null;
 
   return (
@@ -242,6 +244,7 @@ export default function DashboardPage() {
           <StatCard label="Purchase Invoices" value={totalPurchaseInvoices} icon={<FileText size={22} />} color="blue" />
           <StatCard label="Customer Credit" value={formatCurrency(totalCustomerCredit)} icon={<CreditCard size={22} />} color="yellow" />
           <StatCard label="Vendor Debit" value={formatCurrency(purchaseDebitTotal)} icon={<CreditCard size={22} />} color="red" />
+          <StatCard label="Monthly Cash Sales" value={formatCurrency(monthlyCashSalesTotal)} icon={<Wallet size={22} />} color="green" href="/dashboard/cash-sales" />
           <StatCard label="Monthly Expenses" value={formatCurrency(monthlyExpensesTotal)} icon={<Receipt size={22} />} color="red" href="/dashboard/expenses" />
         </div>
 
