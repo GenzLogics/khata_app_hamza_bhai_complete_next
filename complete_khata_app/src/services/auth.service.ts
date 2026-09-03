@@ -70,13 +70,10 @@ export const authService = {
   },
 
   async signOut(): Promise<void> {
-    const refreshToken = Cookies.get("refresh_token");
-    if (refreshToken) {
-      try {
-        await apiClient.post("/auth/signout", { refresh_token: refreshToken });
-      } catch {
-        // proceed with local cleanup even if the API call failsc
-      }
+    try {
+      await apiClient.post("/auth/signout");
+    } catch {
+      // proceed with local cleanup even if the API call fails
     }
     Cookies.remove("access_token");
     Cookies.remove("refresh_token");
