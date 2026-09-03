@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { cashSales, salesInvoices, salesInvoicePayments, purchaseInvoices, purchaseInvoicePayments, expenses, customers, vendors, users } from "@/lib/db/schema";
 import { eq, and, gte, lte, inArray } from "drizzle-orm";
 import { ok, badRequest, unauthorized, serverError } from "@/lib/api-response";
+import { formatDateOnly } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     for (const cs of cashSalesData) {
       items.push({
-        date: cs.fromDate.toISOString().slice(0, 10),
+        date: formatDateOnly(cs.fromDate) || "",
         type: "cash_sale",
         amount: Number(cs.amount),
         notes: cs.notes,
@@ -95,7 +96,7 @@ export async function GET(request: NextRequest) {
 
     for (const si of salesInvoicesData) {
       items.push({
-        date: si.invoiceDate.toISOString().slice(0, 10),
+        date: formatDateOnly(si.invoiceDate) || "",
         type: "invoice",
         amount: Number(si.totalAmount),
         notes: si.notes,
@@ -108,7 +109,7 @@ export async function GET(request: NextRequest) {
 
       if (Number(si.balanceDue) > 0) {
         items.push({
-          date: si.invoiceDate.toISOString().slice(0, 10),
+          date: formatDateOnly(si.invoiceDate) || "",
           type: "invoice_credit",
           amount: Number(si.balanceDue),
           notes: si.notes,
@@ -123,7 +124,7 @@ export async function GET(request: NextRequest) {
 
     for (const sp of salesPaymentsData) {
       items.push({
-        date: sp.paymentDate.toISOString().slice(0, 10),
+        date: formatDateOnly(sp.paymentDate) || "",
         type: "payment",
         amount: Number(sp.amount),
         notes: sp.notes,
@@ -137,7 +138,7 @@ export async function GET(request: NextRequest) {
 
     for (const pi of purchaseInvoicesData) {
       items.push({
-        date: pi.invoiceDate.toISOString().slice(0, 10),
+        date: formatDateOnly(pi.invoiceDate) || "",
         type: "purchase_invoice",
         amount: Number(pi.totalAmount),
         notes: pi.notes,
@@ -151,7 +152,7 @@ export async function GET(request: NextRequest) {
 
     for (const pp of purchasePaymentsData) {
       items.push({
-        date: pp.paymentDate.toISOString().slice(0, 10),
+        date: formatDateOnly(pp.paymentDate) || "",
         type: "purchase_payment",
         amount: Number(pp.amount),
         notes: pp.notes,
@@ -165,7 +166,7 @@ export async function GET(request: NextRequest) {
 
     for (const e of expensesData) {
       items.push({
-        date: e.fromDate.toISOString().slice(0, 10),
+        date: formatDateOnly(e.fromDate) || "",
         type: "expense",
         amount: Number(e.amount),
         notes: e.notes,

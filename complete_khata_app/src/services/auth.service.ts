@@ -15,6 +15,18 @@ function canUseStorage() {
   return typeof window !== "undefined";
 }
 
+function normalizeUser(raw: unknown): User | null {
+  if (!raw || typeof raw !== "object") return null;
+  const u = raw as Record<string, unknown>;
+  return {
+    id: String(u.id || u._id || ""),
+    email: String(u.email || ""),
+    full_name: String(u.full_name ?? u.fullName ?? u.name ?? ""),
+    is_active: (u.is_active as boolean) ?? (u.isActive as boolean) ?? true,
+    created_at: String(u.created_at ?? u.createdAt ?? ""),
+  };
+}
+
 export const authService = {
   storeUser(user: User) {
     if (!canUseStorage()) return;
@@ -26,7 +38,8 @@ export const authService = {
     const raw = localStorage.getItem(USER_STORAGE_KEY);
     if (!raw) return null;
     try {
-      return JSON.parse(raw) as User;
+      const parsed = JSON.parse(raw);
+      return normalizeUser(parsed);
     } catch {
       return null;
     }

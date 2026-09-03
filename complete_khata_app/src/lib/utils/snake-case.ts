@@ -23,7 +23,7 @@ export function toSnakeCase(obj: Record<string, unknown>): Record<string, unknow
 
 function convertValue(value: unknown, snakeKey?: string): unknown {
   if (value === null || value === undefined) return value;
-  if (value instanceof Date) return value.toISOString();
+  if (value instanceof Date) return safeDate(value);
   if (Array.isArray(value)) return value.map((item) => convertValue(item, snakeKey));
   if (typeof value === "object") return toSnakeCase(value as Record<string, unknown>);
   if (typeof value === "string" && snakeKey && !SKIP_STRING_CONVERSION.has(snakeKey)) {
@@ -33,4 +33,18 @@ function convertValue(value: unknown, snakeKey?: string): unknown {
     }
   }
   return value;
+}
+
+export function safeDate(date: Date | string | null | undefined): string | null {
+  if (!date) return null;
+  const d = date instanceof Date ? date : new Date(date);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
+export function formatDateOnly(date: Date | string | null | undefined): string | null {
+  if (!date) return null;
+  const d = date instanceof Date ? date : new Date(date);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10);
 }

@@ -11,7 +11,7 @@ import {
 import { eq, and, sql, desc, gte, lte } from "drizzle-orm";
 import { ok, badRequest, unauthorized, notFound, conflict, serverError } from "@/lib/api-response";
 import { z } from "zod";
-import { toSnakeCase } from "@/lib/utils/snake-case";
+import { toSnakeCase, formatDateOnly } from "@/lib/utils/snake-case";
 
 const createSchema = z.object({
   vendor_id: z.string().uuid(),
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     if (!finalInvoiceNumber) {
       const [countResult] = await getDb().select({ count: sql<number>`count(*)` }).from(purchaseInvoices).where(sql`${purchaseInvoices.invoiceNumber} LIKE 'PINV-%'`);
       const count = Number(countResult?.count || 0);
-      const dateStr = invoiceDate.toISOString().slice(0, 10).replace(/-/g, "");
+      const dateStr = formatDateOnly(invoiceDate)?.replace(/-/g, "") || "";
       const book = String(1).padStart(3, "0");
       const serial = String(count + 1).padStart(4, "0");
       finalInvoiceNumber = `PINV-${dateStr}-B${book}-${serial}`;

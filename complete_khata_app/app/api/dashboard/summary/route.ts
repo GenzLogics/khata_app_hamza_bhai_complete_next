@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { cashSales, salesInvoices, salesInvoicePayments, purchaseInvoices, purchaseInvoicePayments, expenses, users, customers, vendors } from "@/lib/db/schema";
 import { eq, and, sql, gte, lte, inArray } from "drizzle-orm";
 import { ok, unauthorized, serverError } from "@/lib/api-response";
+import { formatDateOnly } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -108,8 +109,8 @@ export async function GET(request: NextRequest) {
     return ok({
       message: "Dashboard summary fetched",
       period: period || "",
-      from_date: fromDateParam || fromDate.toISOString().slice(0, 10),
-      to_date: toDateParam || toDate.toISOString().slice(0, 10),
+      from_date: fromDateParam || formatDateOnly(fromDate) || "",
+      to_date: toDateParam || formatDateOnly(toDate) || "",
       total_customers: Number(totalCustomersResult[0]?.count || 0),
       total_vendors: Number(totalVendorsResult[0]?.count || 0),
       cash_sales_count: Number(cashSalesResult[0]?.count || 0),
