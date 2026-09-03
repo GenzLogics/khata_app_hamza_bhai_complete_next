@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { stockItems, users } from "@/lib/db/schema";
-import { eq, and, sql, ilike } from "drizzle-orm";
-import { ok, serverError, unauthorized } from "@/lib/api-response";
+import { eq, and } from "drizzle-orm";
+import { ok, notFound, unauthorized, serverError } from "@/lib/api-response";
 import { toSnakeCase } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
@@ -21,35 +21,22 @@ async function getAuthUser(request: NextRequest) {
   return user;
 }
 
-export async function GET(request: NextRequest) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthUser(request);
-    const { searchParams } = new URL(request.url);
-    const skip = parseInt(searchParams.get("skip") || "0", 10);
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
-    const search = searchParams.get("search") || "";
+    const { id } = await params;
+    const [stockItem] = await getDb().select().from(stockItems).where(and(eq(stockItems.id, id), eq(stockItems.ownerId, user.id))).limit(1);
 
-    const conditions = [eq(stockItems.ownerId, user.id)];
-    if (search) {
-      conditions.push(ilike(stockItems.itemName, `%${search.toLowerCase()}%`));
-    }
+    if (!stockItem) return notFound("Stock item not found");
 
-    const whereClause = and(...conditions);
+    await getDb().delete(stockItems).where(eq(stockItems.id, id));
 
-    const [items, totalResult] = await Promise.all([
-      getDb().select().from(stockItems).where(whereClause).orderBy(stockItems.itemName).offset(skip).limit(limit),
-      getDb().select({ count: sql<number>`count(*)` }).from(stockItems).where(whereClause),
-    ]);
-
-    const total = Number(totalResult[0]?.count || 0);
-
-    return ok({ message: "Stock fetched", total, items: items.map(toSnakeCase) });
+    return ok({ message: "Stock deleted" });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
     }
-    console.error("List stock error:", error);
-    return serverError("Failed to fetch stock");
+    console.error("Delete stock error:", error);
+    return serverError("Failed to delete stock");
   }
 }
-

@@ -4,6 +4,7 @@ import { investors, users } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { ok, badRequest, unauthorized, notFound, serverError } from "@/lib/api-response";
 import { z } from "zod";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const updateSchema = z.object({
   investment_amount: z.number().positive().optional(),
@@ -36,10 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!investor) return notFound("Investor not found");
 
-    return ok({
-      message: "Investor fetched",
-      investor,
-    });
+    return ok(toSnakeCase(investor));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
@@ -71,10 +69,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const [updated] = await getDb().update(investors).set(updateData).where(eq(investors.id, id)).returning();
 
-    return ok({
-      message: "Investor updated",
-      investor: updated,
-    });
+    return ok(toSnakeCase(updated));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
@@ -94,7 +89,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     await getDb().delete(investors).where(eq(investors.id, id));
 
-    return new NextResponse(null, { status: 204 });
+    return ok(toSnakeCase(investor));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

@@ -63,10 +63,10 @@ export async function POST(request: NextRequest) {
         user: {
           id: user.id,
           email: user.email,
-          fullName: user.fullName,
-          isActive: user.isActive,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
+          full_name: user.fullName,
+          is_active: user.isActive,
+          created_at: user.createdAt,
+          updated_at: user.updatedAt,
         },
       },
       { status: 201 }

@@ -4,6 +4,7 @@ import { investors, users } from "@/lib/db/schema";
 import { eq, and, ilike, sql, desc } from "drizzle-orm";
 import { ok, badRequest, unauthorized, conflict, serverError } from "@/lib/api-response";
 import { z } from "zod";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const createSchema = z.object({
   investment_amount: z.number().positive(),
@@ -51,9 +52,8 @@ export async function GET(request: NextRequest) {
     const total = Number(totalResult[0]?.count || 0);
 
     return ok({
-      message: "Investors fetched",
       total,
-      items,
+      items: items.map(toSnakeCase),
     });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
@@ -84,10 +84,7 @@ export async function POST(request: NextRequest) {
       notes: notes || null,
     }).returning();
 
-    return ok({
-      message: "Investor created",
-      investor,
-    }, 201);
+    return ok(toSnakeCase(investor), 201);
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

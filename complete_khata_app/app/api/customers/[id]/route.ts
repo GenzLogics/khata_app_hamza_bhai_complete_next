@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { customers, salesInvoices, users } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { ok, badRequest, unauthorized, notFound, conflict, serverError } from "@/lib/api-response";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -28,10 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!customer) return notFound("Customer not found");
 
-    return ok({
-      message: "Customer fetched",
-      customer,
-    });
+    return ok({ message: "Customer fetched", customer: toSnakeCase(customer) });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
@@ -64,10 +62,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const [updated] = await getDb().update(customers).set(updateData).where(eq(customers.id, id)).returning();
 
-    return ok({
-      message: "Customer updated",
-      customer: updated,
-    });
+    return ok({ message: "Customer updated", customer: toSnakeCase(updated) });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

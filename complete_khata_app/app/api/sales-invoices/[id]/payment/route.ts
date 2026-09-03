@@ -9,6 +9,7 @@ import {
 import { eq, and } from "drizzle-orm";
 import { ok, badRequest, notFound, unauthorized, serverError } from "@/lib/api-response";
 import { z } from "zod";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const createPaymentSchema = z.object({
   amount: z.number().positive(),
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return ok({
       message: "Payment recorded",
-      invoice: result,
+      invoice: toSnakeCase(result),
     });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {

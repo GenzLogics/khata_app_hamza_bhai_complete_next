@@ -11,6 +11,7 @@ import {
 import { eq, and, sql, desc, gte, lte } from "drizzle-orm";
 import { ok, badRequest, unauthorized, notFound, conflict, serverError } from "@/lib/api-response";
 import { z } from "zod";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const createSchema = z.object({
   vendor_id: z.string().uuid(),
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     const total = Number(totalResult[0]?.count || 0);
 
-    return ok({ message: "Purchase invoices fetched", total, items });
+    return ok({ total, items: items.map(toSnakeCase) });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
@@ -173,14 +174,11 @@ export async function POST(request: NextRequest) {
       return { invoice: newInvoice, items: insertedItems };
     });
 
-    return ok({
-      message: "Purchase invoice created",
-      invoice: {
-        ...invoice.invoice,
-        items: invoice.items,
-        payments: [],
-      },
-    }, 201);
+    return ok(toSnakeCase({
+      ...invoice.invoice,
+      items: invoice.items,
+      payments: [],
+    }), 201);
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

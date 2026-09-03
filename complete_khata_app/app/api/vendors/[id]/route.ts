@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { vendors, purchaseInvoices, users } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { ok, badRequest, unauthorized, notFound, conflict, serverError } from "@/lib/api-response";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -31,10 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const [debitResult] = await getDb().select({ total: sql<number>`coalesce(sum(${purchaseInvoices.balanceDue}), 0)` }).from(purchaseInvoices).where(eq(purchaseInvoices.vendorId, id));
     const debit_amount = Number(debitResult?.total || 0);
 
-    return ok({
-      message: "Vendor fetched",
-      vendor: { ...vendor, debit_amount },
-    });
+    return ok(toSnakeCase({ ...vendor, debit_amount }));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
@@ -69,10 +67,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const [debitResult] = await getDb().select({ total: sql<number>`coalesce(sum(${purchaseInvoices.balanceDue}), 0)` }).from(purchaseInvoices).where(eq(purchaseInvoices.vendorId, id));
     const debit_amount = Number(debitResult?.total || 0);
 
-    return ok({
-      message: "Vendor updated",
-      vendor: { ...updated, debit_amount },
-    });
+    return ok(toSnakeCase({ ...updated, debit_amount }));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

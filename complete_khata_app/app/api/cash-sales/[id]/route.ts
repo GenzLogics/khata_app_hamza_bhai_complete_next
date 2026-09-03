@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { cashSales, users } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { ok, notFound, serverError, unauthorized } from "@/lib/api-response";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!cashSale) return notFound("Cash sale not found");
 
-    return ok({ message: "Cash sale fetched", cash_sale: cashSale });
+    return ok(toSnakeCase(cashSale));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
@@ -55,7 +56,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const [updated] = await getDb().update(cashSales).set(updateData).where(eq(cashSales.id, id)).returning();
 
-    return ok({ message: "Cash sale updated", cash_sale: updated });
+    return ok(toSnakeCase(updated));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

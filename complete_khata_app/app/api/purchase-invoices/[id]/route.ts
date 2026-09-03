@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { purchaseInvoices, vendors, purchaseInvoiceItems, purchaseInvoicePayments, users, stockItems } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { ok, notFound, unauthorized, serverError } from "@/lib/api-response";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -31,10 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const items = await getDb().select().from(purchaseInvoiceItems).where(eq(purchaseInvoiceItems.purchaseInvoiceId, id));
     const payments = await getDb().select().from(purchaseInvoicePayments).where(eq(purchaseInvoicePayments.purchaseInvoiceId, id));
 
-    return ok({
-      message: "Purchase invoice fetched",
-      invoice: { ...invoice, items, payments },
-    });
+    return ok(toSnakeCase({ ...invoice, items, payments }));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

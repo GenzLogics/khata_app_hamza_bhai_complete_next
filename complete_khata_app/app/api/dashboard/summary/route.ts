@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { cashSales, salesInvoices, salesInvoicePayments, purchaseInvoices, purchaseInvoicePayments, expenses, users } from "@/lib/db/schema";
+import { cashSales, salesInvoices, salesInvoicePayments, purchaseInvoices, purchaseInvoicePayments, expenses, users, customers, vendors } from "@/lib/db/schema";
 import { eq, and, sql, gte, lte, inArray } from "drizzle-orm";
 import { ok, unauthorized, serverError } from "@/lib/api-response";
 
@@ -87,6 +87,8 @@ export async function GET(request: NextRequest) {
       purchaseInvoicesResult,
       purchaseBalanceDueResult,
       expensesResult,
+      totalCustomersResult,
+      totalVendorsResult,
     ] = await Promise.all([
       getDb().select({ count: sql<number>`count(*)`, total: sql<number>`coalesce(sum(${cashSales.amount}), 0)` }).from(cashSales).where(and(eq(cashSales.ownerId, user.id), gte(cashSales.fromDate, fromDate), lte(cashSales.fromDate, toDate))),
       getDb().select({ count: sql<number>`count(*)`, total: sql<number>`coalesce(sum(${salesInvoices.totalAmount}), 0)` }).from(salesInvoices).where(and(eq(salesInvoices.ownerId, user.id), gte(salesInvoices.invoiceDate, fromDate), lte(salesInvoices.invoiceDate, toDate))),
@@ -94,6 +96,8 @@ export async function GET(request: NextRequest) {
       getDb().select({ count: sql<number>`count(*)`, total: sql<number>`coalesce(sum(${purchaseInvoices.totalAmount}), 0)` }).from(purchaseInvoices).where(and(eq(purchaseInvoices.ownerId, user.id), gte(purchaseInvoices.invoiceDate, fromDate), lte(purchaseInvoices.invoiceDate, toDate))),
       getDb().select({ total: sql<number>`coalesce(sum(${purchaseInvoices.balanceDue}), 0)` }).from(purchaseInvoices).where(and(eq(purchaseInvoices.ownerId, user.id), gte(purchaseInvoices.invoiceDate, fromDate), lte(purchaseInvoices.invoiceDate, toDate))),
       getDb().select({ total: sql<number>`coalesce(sum(${expenses.amount}), 0)` }).from(expenses).where(and(eq(expenses.ownerId, user.id), gte(expenses.fromDate, fromDate), lte(expenses.fromDate, toDate))),
+      getDb().select({ count: sql<number>`count(*)` }).from(customers).where(eq(customers.ownerId, user.id)),
+      getDb().select({ count: sql<number>`count(*)` }).from(vendors).where(eq(vendors.ownerId, user.id)),
     ]);
 
     const salesInvoiceIds = salesInvoicesData.map((s) => s.id);
@@ -103,6 +107,11 @@ export async function GET(request: NextRequest) {
 
     return ok({
       message: "Dashboard summary fetched",
+      period: period || "",
+      from_date: fromDateParam || fromDate.toISOString().slice(0, 10),
+      to_date: toDateParam || toDate.toISOString().slice(0, 10),
+      total_customers: Number(totalCustomersResult[0]?.count || 0),
+      total_vendors: Number(totalVendorsResult[0]?.count || 0),
       cash_sales_count: Number(cashSalesResult[0]?.count || 0),
       cash_sales_total: Number(cashSalesResult[0]?.total || 0),
       sales_invoices_count: Number(salesInvoicesResult[0]?.count || 0),

@@ -4,6 +4,7 @@ import { expenses, users } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { ok, badRequest, unauthorized, notFound, serverError } from "@/lib/api-response";
 import { z } from "zod";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const updateSchema = z.object({
   amount: z.number().positive().optional(),
@@ -38,10 +39,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!expense) return notFound("Expense not found");
 
-    return ok({
-      message: "Expense fetched",
-      expense,
-    });
+    return ok(toSnakeCase(expense));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
@@ -75,10 +73,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const [updated] = await getDb().update(expenses).set(updateData).where(eq(expenses.id, id)).returning();
 
-    return ok({
-      message: "Expense updated",
-      expense: updated,
-    });
+    return ok(toSnakeCase(updated));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

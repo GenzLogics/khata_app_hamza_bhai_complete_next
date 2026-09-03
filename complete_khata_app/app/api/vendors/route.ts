@@ -4,6 +4,7 @@ import { vendors, users, purchaseInvoices } from "@/lib/db/schema";
 import { eq, and, or, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ok, badRequest, unauthorized, conflict, serverError } from "@/lib/api-response";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const createSchema = z.object({
   name: z.string().min(2).max(255),
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
 
     return ok({
       total,
-      items: vendorsWithDebit,
+      items: vendorsWithDebit.map(toSnakeCase),
     });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
@@ -96,10 +97,7 @@ export async function POST(request: NextRequest) {
 
     const [vendor] = await getDb().insert(vendors).values({ ownerId: user.id, name, phone: phone || null }).returning();
 
-    return ok({
-      message: "Vendor created",
-      vendor,
-    }, 201);
+    return ok(toSnakeCase(vendor), 201);
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

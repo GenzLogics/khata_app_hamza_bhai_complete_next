@@ -4,6 +4,7 @@ import { purchaseInvoices, purchaseInvoicePayments, vendors, purchaseInvoiceItem
 import { eq, and, sql } from "drizzle-orm";
 import { ok, badRequest, notFound, unauthorized, serverError } from "@/lib/api-response";
 import { z } from "zod";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const createPaymentSchema = z.object({
   amount: z.number().positive(),
@@ -77,10 +78,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return { invoice: updatedInvoice, items, payments };
     });
 
-    return ok({
-      message: "Payment recorded",
-      invoice: result,
-    });
+    return ok(toSnakeCase({
+      ...result.invoice,
+      items: result.items,
+      payments: result.payments,
+    }));
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

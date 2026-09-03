@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { ok, badRequest, notFound, unauthorized, serverError } from "@/lib/api-response";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return ok({
       message: "Sales invoice fetched",
-      invoice: { ...invoice, items, payments },
+      invoice: toSnakeCase({ ...invoice, items, payments }),
     });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {

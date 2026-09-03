@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { salesInvoices, purchaseInvoices, customers, vendors, users } from "@/lib/db/schema";
 import { eq, and, sql, desc, lte } from "drizzle-orm";
 import { ok, serverError, unauthorized } from "@/lib/api-response";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -58,8 +59,8 @@ export async function GET(request: NextRequest) {
     return ok({
       sales_unpaid_count: Number(salesUnpaidCount[0]?.count || 0),
       purchase_unpaid_count: Number(purchaseUnpaidCount[0]?.count || 0),
-      sales_unpaid: salesUnpaidResult,
-      purchase_unpaid: purchaseUnpaidResult,
+      sales_unpaid: salesUnpaidResult.map(toSnakeCase),
+      purchase_unpaid: purchaseUnpaidResult.map(toSnakeCase),
     });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {

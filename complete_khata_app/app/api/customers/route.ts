@@ -6,6 +6,7 @@ import { getCurrentUser, AuthenticatedUser } from "@/lib/auth/get-user";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { z } from "zod";
 import { ok, badRequest, unauthorized, conflict, serverError, notFound } from "@/lib/api-response";
+import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const createSchema = z.object({
   name: z.string().min(2).max(255),
@@ -58,12 +59,13 @@ export async function GET(request: NextRequest) {
     const total = Number(totalResult[0]?.count || 0);
 
     return ok({
-      message: "Customers fetched",
       total,
-      items: items.map((c) => ({
-        ...c,
-        credit_amount: 0,
-      })),
+      items: items.map((c) =>
+        toSnakeCase({
+          ...c,
+          credit_amount: 0,
+        })
+      ),
     });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
@@ -95,10 +97,7 @@ export async function POST(request: NextRequest) {
 
     const [customer] = await getDb().insert(customers).values({ ownerId: user.id, name, phone: phone || null }).returning();
 
-    return ok({
-      message: "Customer created",
-      customer,
-    }, 201);
+    return ok({ message: "Customer created", customer: toSnakeCase(customer) }, 201);
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();

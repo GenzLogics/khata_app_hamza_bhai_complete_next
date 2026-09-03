@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { stockItems, users } from "@/lib/db/schema";
-import { eq, and, sql, ilike } from "drizzle-orm";
-import { ok, serverError, unauthorized } from "@/lib/api-response";
-import { toSnakeCase } from "@/lib/utils/snake-case";
+import { cashSales, users } from "@/lib/db/schema";
+import { eq, and, gte, lte, sql } from "drizzle-orm";
+import { ok, unauthorized, serverError } from "@/lib/api-response";
 
 async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -25,31 +24,29 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request);
     const { searchParams } = new URL(request.url);
-    const skip = parseInt(searchParams.get("skip") || "0", 10);
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
-    const search = searchParams.get("search") || "";
+    const fromDate = searchParams.get("from_date") || "";
+    const toDate = searchParams.get("to_date") || "";
 
-    const conditions = [eq(stockItems.ownerId, user.id)];
-    if (search) {
-      conditions.push(ilike(stockItems.itemName, `%${search.toLowerCase()}%`));
-    }
+    const conditions = [eq(cashSales.ownerId, user.id)];
+    if (fromDate) conditions.push(gte(cashSales.fromDate, new Date(fromDate)));
+    if (toDate) conditions.push(lte(cashSales.toDate, new Date(toDate)));
 
     const whereClause = and(...conditions);
 
-    const [items, totalResult] = await Promise.all([
-      getDb().select().from(stockItems).where(whereClause).orderBy(stockItems.itemName).offset(skip).limit(limit),
-      getDb().select({ count: sql<number>`count(*)` }).from(stockItems).where(whereClause),
-    ]);
+    const [result] = await getDb()
+      .select({ total_count: sql<number>`count(*)`, total_amount: sql<number>`coalesce(sum(CAST(${cashSales.amount} AS NUMERIC)), 0)` })
+      .from(cashSales)
+      .where(whereClause);
 
-    const total = Number(totalResult[0]?.count || 0);
+    const total_count = Number(result?.total_count || 0);
+    const total_amount = Number(result?.total_amount || 0);
 
-    return ok({ message: "Stock fetched", total, items: items.map(toSnakeCase) });
+    return ok({ total_count, total_amount });
   } catch (error) {
     if (error instanceof Error && (error.message === "No token" || error.message === "Invalid token" || error.message === "User not found")) {
       return unauthorized();
     }
-    console.error("List stock error:", error);
-    return serverError("Failed to fetch stock");
+    console.error("Cash sales summary error:", error);
+    return serverError("Failed to fetch cash sales summary");
   }
 }
-
