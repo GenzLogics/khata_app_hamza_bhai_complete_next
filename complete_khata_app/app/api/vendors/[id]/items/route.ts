@@ -45,11 +45,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const user = await getAuthUser(request);
     const body = await request.json();
-    const itemName = typeof body.itemName === "string" ? body.itemName : "";
+    const itemName = typeof body.item_name === "string" ? body.item_name : "";
     const { id } = await params;
 
     if (!itemName.trim()) {
-      return badRequest("itemName is required");
+      return badRequest("item_name is required");
     }
 
     const [vendor] = await getDb().select().from(vendors).where(and(eq(vendors.id, id), eq(vendors.ownerId, user.id))).limit(1);

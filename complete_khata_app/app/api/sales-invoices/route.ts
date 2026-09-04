@@ -64,7 +64,11 @@ export async function GET(request: NextRequest) {
     const conditions = [eq(salesInvoices.ownerId, user.id)];
     if (customer_id) conditions.push(eq(salesInvoices.customerId, customer_id));
     if (fromDate) conditions.push(gte(salesInvoices.invoiceDate, new Date(fromDate)));
-    if (toDate) conditions.push(lte(salesInvoices.invoiceDate, new Date(toDate)));
+    if (toDate) {
+      const endOfDay = new Date(toDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      conditions.push(lte(salesInvoices.invoiceDate, endOfDay));
+    }
 
     const whereClause = and(...conditions);
 

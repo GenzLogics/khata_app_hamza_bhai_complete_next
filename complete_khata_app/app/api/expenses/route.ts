@@ -42,7 +42,11 @@ export async function GET(request: NextRequest) {
 
     const conditions = [eq(expenses.ownerId, user.id)];
     if (fromDate) conditions.push(gte(expenses.fromDate, new Date(fromDate)));
-    if (toDate) conditions.push(lte(expenses.toDate, new Date(toDate)));
+    if (toDate) {
+      const endOfDay = new Date(toDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      conditions.push(lte(expenses.toDate, endOfDay));
+    }
 
     const whereClause = and(...conditions);
 

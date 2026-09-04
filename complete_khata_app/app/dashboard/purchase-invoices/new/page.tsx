@@ -450,7 +450,15 @@ export default function NewPurchaseInvoicePage() {
                       </td>
                       <td className="px-4 py-3 text-black">Bag</td>
                       <td className="px-4 py-3 text-right text-black">
-                        {row.weight_per_unit ?? DEFAULT_BAG_WEIGHT_KG}
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.001"
+                          value={row.weight_per_unit ?? DEFAULT_BAG_WEIGHT_KG}
+                          onChange={(e) => updateRow(row.id, { weight_per_unit: Number(e.target.value || 0) })}
+                          className="w-24 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-right text-sm text-black focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          title="Kg per bag"
+                        />
                       </td>
                       <td className="px-4 py-3 text-right font-medium text-black">{weight.toFixed(3)}</td>
                       <td className="px-4 py-3">

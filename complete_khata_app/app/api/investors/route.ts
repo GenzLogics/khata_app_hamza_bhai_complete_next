@@ -8,7 +8,7 @@ import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const createSchema = z.object({
   investment_amount: z.number().positive(),
-  investment_date: z.string().datetime().optional(),
+  investment_date: z.string().min(1).optional(),
   investor_name: z.string().max(255).optional(),
   notes: z.string().optional(),
 });

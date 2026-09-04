@@ -8,8 +8,8 @@ import { toSnakeCase } from "@/lib/utils/snake-case";
 
 const createCashSaleSchema = z.object({
   amount: z.number().positive(),
-  from_date: z.string().datetime(),
-  to_date: z.string().datetime(),
+  from_date: z.string().min(1, "From date is required"),
+  to_date: z.string().min(1, "To date is required"),
   notes: z.string().optional(),
 });
 
@@ -70,7 +70,11 @@ export async function GET(request: NextRequest) {
 
     const conditions = [eq(cashSales.ownerId, user.id)];
     if (fromDate) conditions.push(gte(cashSales.fromDate, fromDate));
-    if (toDate) conditions.push(lte(cashSales.toDate, toDate));
+    if (toDate) {
+      const endOfDay = new Date(toDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      conditions.push(lte(cashSales.toDate, endOfDay));
+    }
 
     const whereClause = and(...conditions);
 

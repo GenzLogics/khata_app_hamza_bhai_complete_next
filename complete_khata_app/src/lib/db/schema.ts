@@ -15,7 +15,7 @@ import { relations } from "drizzle-orm";
 export const users = pgTable(
   "users",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     email: varchar("email", { length: 255 }).notNull().unique(),
     hashedPassword: varchar("hashed_password", { length: 255 }).notNull(),
     fullName: varchar("full_name", { length: 255 }).notNull(),
@@ -31,7 +31,7 @@ export const users = pgTable(
 export const customers = pgTable(
   "customers",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -51,7 +51,7 @@ export const customers = pgTable(
 export const vendors = pgTable(
   "vendors",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -72,7 +72,7 @@ export const vendors = pgTable(
 export const vendorItems = pgTable(
   "vendor_items",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     vendorId: uuid("vendor_id")
       .notNull()
       .references(() => vendors.id, { onDelete: "cascade" }),
@@ -89,7 +89,7 @@ export const vendorItems = pgTable(
 export const salesInvoices = pgTable(
   "sales_invoices",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -116,7 +116,7 @@ export const salesInvoices = pgTable(
 export const salesInvoiceItems = pgTable(
   "sales_invoice_items",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     salesInvoiceId: uuid("sales_invoice_id")
       .notNull()
       .references(() => salesInvoices.id, { onDelete: "cascade" }),
@@ -133,7 +133,7 @@ export const salesInvoiceItems = pgTable(
 export const salesInvoicePayments = pgTable(
   "sales_invoice_payments",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     salesInvoiceId: uuid("sales_invoice_id")
       .notNull()
       .references(() => salesInvoices.id, { onDelete: "cascade" }),
@@ -150,7 +150,7 @@ export const salesInvoicePayments = pgTable(
 export const purchaseInvoices = pgTable(
   "purchase_invoices",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -177,7 +177,7 @@ export const purchaseInvoices = pgTable(
 export const purchaseInvoiceItems = pgTable(
   "purchase_invoice_items",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     purchaseInvoiceId: uuid("purchase_invoice_id")
       .notNull()
       .references(() => purchaseInvoices.id, { onDelete: "cascade" }),
@@ -194,7 +194,7 @@ export const purchaseInvoiceItems = pgTable(
 export const purchaseInvoicePayments = pgTable(
   "purchase_invoice_payments",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     purchaseInvoiceId: uuid("purchase_invoice_id")
       .notNull()
       .references(() => purchaseInvoices.id, { onDelete: "cascade" }),
@@ -211,7 +211,7 @@ export const purchaseInvoicePayments = pgTable(
 export const expenses = pgTable(
   "expenses",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -234,7 +234,7 @@ export const expenses = pgTable(
 export const cashSales = pgTable(
   "cash_sales",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -255,7 +255,7 @@ export const cashSales = pgTable(
 export const investors = pgTable(
   "investors",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -274,7 +274,7 @@ export const investors = pgTable(
 export const stockItems = pgTable(
   "stock_items",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
